@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
 _addon.name = 'NoSlowHaste'
 _addon.author = 'Atilas'
-_addon.version = '1.0'
+_addon.version = '1.1'
 _addon.command = 'nsh'
 _addon.commands = {'help','debug'}
 _addon.language = 'english'
@@ -45,14 +45,13 @@ local packets = require('packets')
 local res = require('resources')
 
 debugmode = false
-playerStatus = -1
 trustList = S{'Sylvie','Ygnas','Apururu','Ingrid','Cherukiki','Ferreous Coffin','Karaha-Baruha','Pieuje','Shikaree Z'}
 
 windower.register_event('addon command', function(...)
 
 	local arg = {...}
 	if #arg > 1 then
-		windower.add_to_chat(167, 'NoSlowHaste - Invalid command. //ft help for valid options.')
+		windower.add_to_chat(167, 'NoSlowHaste - Invalid command. //nsh help for valid options.')
 
 	elseif #arg == 1 and arg[1]:lower() == 'debug' then
 		if debugmode == true then
@@ -71,21 +70,6 @@ windower.register_event('addon command', function(...)
 	end
 end)
 
-windower.register_event('status change',function(new,old)
-    windower.debug('status change '..new)
-    if T{2,3,4}:contains(old) or T{2,3,4}:contains(new) then 
-		targeting = false
-		return 
-	end
-
-	if debugmode then windower.add_to_chat(207, 'NoSlowHaste - Status change detected new='..new..' old='..old) end
-	playerStatus = new
-end)
-
-windower.register_event('zone change',function(new_id, old_id) 
-	playerStatus = 0
-end)
-
 
 -- Track last spell cast to match with follow-up message
 local last_spell_cast = {}
@@ -102,7 +86,7 @@ windower.register_event('incoming chunk', function(id, data)
     if id == 0x028 then
         local packet = packets.parse('incoming', data)
 
-        if packet['Category'] == 4 then
+        if packet and packet['Category'] == 4 then
             local spell_id = packet['Param']
             local spell = res.spells[spell_id]
             local target_id = packet['Target 1 ID']
